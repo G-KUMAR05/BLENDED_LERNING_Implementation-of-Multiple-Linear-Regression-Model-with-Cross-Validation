@@ -45,62 +45,52 @@ To write a program to predict the price of cars using a multiple linear regressi
 Program to implement the multiple linear regression model for predicting car prices with cross-validation.
 Developed by: KUMAR G
 RegisterNumber: 212223220048
-*/
-# Importing necessary libraries
+/*
 import pandas as pd
-import numpy as np
-import statsmodels.api as sm
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.linear_model import LinearRegression
-import matplotlib.pyplot as plt
+from sklearn.metrics import mean_squared_error, r2_score
+import numpy as np
 
 # Load the dataset
-data = pd.read_csv("https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBM-ML240EN-SkillsNetwork/labs/data/CarPrice_Assignment.csv")
+file_path = 'encoded_car_data.csv'
+df = pd.read_csv(file_path)
 
-# Data preprocessing
-# Dropping unnecessary columns and handling categorical variables
-data = data.drop(['CarName', 'car_ID'], axis=1)
-data = pd.get_dummies(data, drop_first=True)
+# Select relevant features and target variable
+X = df.drop(columns=['price'])  # All columns except 'price'
+y = df['price']  # Target variable
 
-# Splitting the data into features and target variable
-X = data.drop('price', axis=1)
-y = data['price']
-
-# Splitting the dataset into training and testing sets
+# Split the dataset (not strictly required for cross-validation, but good for validation outside cross-validation)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Creating the model
+# Train the Multiple Linear Regression model
 model = LinearRegression()
-
-# Fitting the model on the training data
 model.fit(X_train, y_train)
 
-# Evaluating model performance using cross-validation
-cv_scores = cross_val_score(model, X, y, cv=5)
+# Evaluate on test set
+y_pred = model.predict(X_test)
+print("Test Set Evaluation:")
+print("Mean Squared Error (MSE):", mean_squared_error(y_test, y_pred))
+print("R-squared:", r2_score(y_test, y_pred))
 
-# Printing cross-validation scores
-print("Cross-validation scores:", cv_scores)
-print("Mean cross-validation score:", cv_scores.mean())
+# Cross-Validation
+cv_scores = cross_val_score(model, X, y, cv=5, scoring='neg_mean_squared_error')  # 5-fold CV
+cv_mse = -cv_scores  # Convert negative MSE to positive
+print("\nCross-Validation Results:")
+print("MSE for each fold:", cv_mse)
+print("Mean MSE:", np.mean(cv_mse))
+print("Standard Deviation of MSE:", np.std(cv_mse))
 
-# Print model coefficients
-print("Intercept:", model.intercept_)
-print("Coefficients:", model.coef_)
-
-# Make predictions
-predictions = model.predict(X_test)
-
-# Visualizing actual vs predicted prices
-plt.scatter(y_test, predictions)
-plt.xlabel("Actual Prices")
-plt.ylabel("Predicted Prices")
-plt.title("Actual vs Predicted Prices")
-plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], color='red')  # Perfect prediction line
-plt.show()
+# Cross-Validation R-squared
+cv_r2_scores = cross_val_score(model, X, y, cv=5, scoring='r2')
+print("\nR-squared for each fold:", cv_r2_scores)
+print("Mean R-squared:", np.mean(cv_r2_scores))
+print("Standard Deviation of R-squared:", np.std(cv_r2_scores))
 
 ```
 
 ## Output:
-<img width="801" alt="Screenshot 2024-10-06 at 8 53 33 PM" src="https://github.com/user-attachments/assets/1a84f7be-ffb0-4073-b864-39555861f443">
+![image](https://github.com/user-attachments/assets/3faeb979-98b4-4b08-a360-f9afe8ffc4a4)
 
 
 ## Result:
